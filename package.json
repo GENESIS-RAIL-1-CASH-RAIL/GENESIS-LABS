@@ -1,0 +1,19 @@
+{
+  "name": "genesis-labs",
+  "version": "1.0.0",
+  "description": "GENESIS LABS — The Weapons Forge | Port 8845 | Under DARPA | Zero Copy Gate via SOP-101",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npx ts-node src/index.ts"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
