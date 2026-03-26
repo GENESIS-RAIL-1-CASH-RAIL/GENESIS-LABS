@@ -751,6 +751,7 @@ export class LabsService {
       weaponId: weapon.weaponId,
       name: weapon.name,
       category: weapon.category,
+      deploymentClasses: weapon.deploymentClasses,
       mode: weapon.mode,
       mechanism: weapon.mechanism.slice(0, 200),
       pepFormationAffinity: weapon.pepFormationAffinity,
