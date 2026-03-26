@@ -7,7 +7,7 @@
 import express from "express";
 import { LabsService } from "./services/labs.service";
 import { BacklogService } from "./services/backlog.service";
-import type { DarpaWorkOrderPayload, DefensiveThreatPayload } from "./types";
+import type { DarpaWorkOrderPayload, DefensiveThreatPayload, DeploymentClass } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -190,6 +190,25 @@ app.post("/weapon/:id/retire", (req, res) => {
   res.json(weapon);
 });
 
+// ── Armoury — Deployment Class Catalogue ────────────────────────────
+// Tactical taxonomy: HOW a weapon fights, not WHAT it trades.
+// Commander's human-readable dashboard for arsenal gap analysis.
+
+const VALID_CLASSES: DeploymentClass[] = ["RECON", "STRIKE", "DEFENCE", "STEALTH", "INTEL", "SUPPORT"];
+
+app.get("/armoury", (_req, res) => {
+  res.json(labs.getArmouryDashboard());
+});
+
+app.get("/armoury/:deploymentClass", (req, res) => {
+  const dc = req.params.deploymentClass.toUpperCase() as DeploymentClass;
+  if (!VALID_CLASSES.includes(dc)) {
+    return res.status(400).json({ error: `Invalid deployment class. Valid: ${VALID_CLASSES.join(", ")}` });
+  }
+  const weapons = labs.getWeaponsByDeploymentClass(dc);
+  res.json({ deploymentClass: dc, count: weapons.length, weapons });
+});
+
 // ── Sources ───────────────────────────────────────────────────────────
 
 app.get("/sources", (_req, res) => {
@@ -272,11 +291,11 @@ app.get("/backlog/:id", (req, res) => {
 
 app.post("/backlog/add", (req, res) => {
   if (!LABS_ENABLED) return res.status(503).json({ error: "Labs disabled" });
-  const { title, origin, concept, blocker, prerequisites, priority, estimatedLift } = req.body;
+  const { title, origin, concept, blocker, prerequisites, priority, estimatedLift, deploymentClasses } = req.body;
   if (!title || !concept || !blocker) {
     return res.status(400).json({ error: "Missing title, concept, or blocker" });
   }
-  const entry = backlog.add({ title, origin: origin || "Manual", concept, blocker, prerequisites: prerequisites || [], priority: priority || "MEDIUM", estimatedLift: estimatedLift || "TBD" });
+  const entry = backlog.add({ title, origin: origin || "Manual", concept, blocker, prerequisites: prerequisites || [], priority: priority || "MEDIUM", estimatedLift: estimatedLift || "TBD", deploymentClasses: deploymentClasses || undefined });
   console.log(`[LABS] Backlog entry added: ${entry.id} — ${entry.title}`);
   res.status(201).json(entry);
 });
@@ -383,7 +402,8 @@ app.listen(PORT, () => {
   console.log("[LABS] Contradiction Mining: ECHO slot (always)");
   console.log(`[LABS] Source Profiles: ${labs.getSourceProfiles().length} seeded`);
   console.log(`[LABS] Weapons Development Backlog: ${backlog.getAll().length} entries (mirror of WEAPONS_DEVELOPMENT.md)`);
-  console.log("[LABS] Endpoints: 25 (20 forge + 5 backlog) | Loops: 4 (3 forge + 1 backlog)");
+  console.log("[LABS] Deployment Classes: RECON | STRIKE | DEFENCE | STEALTH | INTEL | SUPPORT");
+  console.log("[LABS] Endpoints: 27 (20 forge + 2 armoury + 5 backlog) | Loops: 4 (3 forge + 1 backlog)");
   console.log("[LABS] \"Their apple, our X. We NEVER copy.\"");
   console.log("═══════════════════════════════════════════════════════════════");
   console.log("");

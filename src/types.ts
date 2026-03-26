@@ -167,10 +167,24 @@ export type WeaponCategory =
   | "EVASION_PATTERN"
   | "CUSTOM";
 
+// ── Deployment Class (Tactical Taxonomy) ──────────────────────────────
+// HOW a weapon fights, not WHAT it trades.
+// CIA needs recon? → RECON. ARIS needs defence? → DEFENCE. PEP picks
+// formation + deployment class together. Weapons can be dual-class.
+
+export type DeploymentClass =
+  | "RECON"      // Intelligence gathering, observation, pattern detection
+  | "STRIKE"     // Alpha generation, direct offensive weapons
+  | "DEFENCE"    // Protection, risk management, emergency response
+  | "STEALTH"    // Deep cover, camouflage, ghost ops, anti-detection
+  | "INTEL"      // Strategic brain, institutional memory, doctrine
+  | "SUPPORT";   // Infrastructure, calibration, logistics
+
 export interface WeaponRecord {
   weaponId: string;
   name: string;
   category: WeaponCategory;
+  deploymentClasses: DeploymentClass[];
   description: string;
   mechanism: string;
   mode: LabsTaskMode;
@@ -277,6 +291,7 @@ export interface BacklogEntry {
   prerequisites: string[];            // Services/infra required
   priority: BacklogPriority;
   status: BacklogStatus;
+  deploymentClasses: DeploymentClass[]; // Tactical taxonomy: how this weapon fights
   estimatedLift: string;              // What needs to happen for constraint to lift
   addedAt: string;
   lastCheckedAt: string;

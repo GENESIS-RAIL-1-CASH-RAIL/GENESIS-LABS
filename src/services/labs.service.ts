@@ -6,6 +6,7 @@ import type {
   RedTeamAssault, HardeningRecord, ZeroCopyResult, WeaponRecord,
   WeaponStatus, WeaponCategory, BirthCertificate, DecayClock,
   WeaponPerformance, LabsState, DarpaWorkOrderPayload, DefensiveThreatPayload,
+  DeploymentClass,
 } from "../types";
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -71,6 +72,22 @@ const DEFAULT_HALF_LIFE: Record<WeaponCategory, number> = {
   DEFENSIVE_COUNTER: 120,
   EVASION_PATTERN: 60,
   CUSTOM: 45,
+};
+
+/** Deployment class auto-classification per weapon category */
+const DEPLOYMENT_CLASS_MAP: Record<WeaponCategory, DeploymentClass[]> = {
+  STATISTICAL_ARBITRAGE: ["STRIKE"],
+  MARKET_MICROSTRUCTURE: ["STRIKE", "RECON"],
+  FUNDING_RATE: ["STRIKE"],
+  CROSS_CHAIN: ["STRIKE"],
+  MEV: ["STRIKE", "STEALTH"],
+  LIQUIDITY: ["STRIKE", "SUPPORT"],
+  VOLATILITY: ["STRIKE", "DEFENCE"],
+  SENTIMENT: ["RECON", "INTEL"],
+  YIELD: ["STRIKE"],
+  DEFENSIVE_COUNTER: ["DEFENCE"],
+  EVASION_PATTERN: ["STEALTH", "DEFENCE"],
+  CUSTOM: ["STRIKE"],
 };
 
 /** PEP formation affinity per weapon category */
@@ -607,6 +624,9 @@ export class LabsService {
       weaponId: `WPN-${randomUUID().slice(0, 8)}`,
       name: task.title.replace(/^\[DEFENSIVE\]\s*/, ""),
       category,
+      deploymentClasses: task.mode === "DEFENSIVE"
+        ? ["DEFENCE"]
+        : (DEPLOYMENT_CLASS_MAP[category] || ["STRIKE"]),
       description: task.reconstruction?.reconstructedApproach || task.description,
       mechanism: task.reconstruction?.refereeVerdict.recommendation || "",
       mode: task.mode,
@@ -936,4 +956,61 @@ export class LabsService {
   getWeaponsCatalogue(): WeaponRecord[] { return [...this.weapons.values()]; }
   getWeapon(weaponId: string): WeaponRecord | undefined { return this.weapons.get(weaponId); }
   getSourceProfiles(): SourceProfile[] { return [...this.sourceProfiles.values()]; }
+
+  // ── Deployment Class Filtered Catalogue ───────────────────────────
+
+  getWeaponsByDeploymentClass(dc: DeploymentClass): WeaponRecord[] {
+    return [...this.weapons.values()].filter(
+      (w) => w.deploymentClasses.includes(dc) && w.status === "ACTIVE",
+    );
+  }
+
+  /**
+   * Commander's Armoury Dashboard — Human-readable tactical overview.
+   * Shows weapon count per deployment class, gaps, and recommendations
+   * for where to aim the next Renaissance Prompt Doctrine spark.
+   */
+  getArmouryDashboard(): {
+    totalWeapons: number;
+    activeWeapons: number;
+    byDeploymentClass: Record<string, { count: number; weapons: string[]; strength: string }>;
+    gaps: string[];
+    recommendations: string[];
+  } {
+    const ALL_CLASSES: DeploymentClass[] = ["RECON", "STRIKE", "DEFENCE", "STEALTH", "INTEL", "SUPPORT"];
+    const active = [...this.weapons.values()].filter((w) => w.status === "ACTIVE");
+
+    const byClass: Record<string, { count: number; weapons: string[]; strength: string }> = {};
+    for (const dc of ALL_CLASSES) {
+      const matching = active.filter((w) => w.deploymentClasses.includes(dc));
+      const count = matching.length;
+      const strength = count === 0 ? "EMPTY" : count <= 2 ? "THIN" : count <= 5 ? "ADEQUATE" : "STRONG";
+      byClass[dc] = {
+        count,
+        weapons: matching.map((w) => `${w.weaponId}: ${w.name}`),
+        strength,
+      };
+    }
+
+    // Identify gaps and recommendations
+    const gaps: string[] = [];
+    const recommendations: string[] = [];
+    for (const dc of ALL_CLASSES) {
+      if (byClass[dc].count === 0) {
+        gaps.push(`${dc}: NO active weapons. Critical gap.`);
+        recommendations.push(`Commander: fire a Renaissance spark targeting ${dc} weapons.`);
+      } else if (byClass[dc].count <= 2) {
+        gaps.push(`${dc}: Only ${byClass[dc].count} weapon(s). Thin coverage.`);
+        recommendations.push(`Consider additional ${dc} weapons for depth.`);
+      }
+    }
+
+    return {
+      totalWeapons: this.weapons.size,
+      activeWeapons: active.length,
+      byDeploymentClass: byClass,
+      gaps,
+      recommendations,
+    };
+  }
 }

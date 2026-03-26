@@ -10,7 +10,7 @@
 // "The spark never dies. It waits in the backlog until the world is ready."
 // ═══════════════════════════════════════════════════════════════════════
 
-import type { BacklogEntry, BacklogPriority, BacklogStatus, WeaponRecord } from "../types";
+import type { BacklogEntry, BacklogPriority, BacklogStatus, DeploymentClass, WeaponRecord } from "../types";
 
 const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
   {
@@ -22,6 +22,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Sentry (8846)", "NVIDIA Grind pipeline"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["RECON", "DEFENCE"],
     estimatedLift: "When GPU tier provisioned. Models train on accumulated Sentry corpus.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -36,6 +37,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Sentry (8846)", "Rail 2 infrastructure", "multi-asset Ingestion Gate"],
     priority: "MEDIUM",
     status: "BACKLOG",
+    deploymentClasses: ["RECON"],
     estimatedLift: "Rail 2 launch + exchange feed integration.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -50,6 +52,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["All services (shared middleware)"],
     priority: "LOW",
     status: "BACKLOG",
+    deploymentClasses: ["DEFENCE", "STEALTH"],
     estimatedLift: "Shared middleware library + service-by-service rollout.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -64,6 +67,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Klingon V2 (identity + noise)", "Sentry", "SOP-101 legal opinion"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["STEALTH", "STRIKE"],
     estimatedLift: "Legal review completion + SOP-101 LAWFUL clearance.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -78,6 +82,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Beachhead Executor V2", "Ingestion Gate (venue correlation)", "ARIS (risk check)"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE"],
     estimatedLift: "Beachhead V2 build + venue correlation engine.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -92,6 +97,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Colocation lease", "FPGA development pipeline"],
     priority: "LOW",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE", "SUPPORT"],
     estimatedLift: "Rail 2 + colocation budget + FPGA engineering hire.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -106,6 +112,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Multi-region deployment", "GPU tier for model retraining"],
     priority: "MEDIUM",
     status: "BACKLOG",
+    deploymentClasses: ["RECON", "DEFENCE"],
     estimatedLift: "Post-revenue scaling. £10K investor round → multi-region EC2.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -120,6 +127,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["NVIDIA Phase 2B", "ALTIUS operational data", "Sentry corpus"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE", "INTEL"],
     estimatedLift: "Post-First Blood + 3-6 months of operational data + GPU tier.",
     addedAt: "2026-03-25T00:00:00.000Z",
     deployedAt: null,
@@ -136,6 +144,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["All 2,034 ingestion feeds", "NVIDIA Phase 2B (GPU tier)", "Unified feature schema"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["RECON", "STRIKE"],
     estimatedLift: "GPU tier provisioned + unified feature pipeline built.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -150,6 +159,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Whiteboard (8710)", "CIA (8797)", "Causal inference library"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["INTEL", "RECON"],
     estimatedLift: "Causal inference library evaluation + Whiteboard graph mode.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -164,6 +174,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Warp Simulation Spec (8795)", "NVIDIA Phase 2B", "Venue order book history"],
     priority: "HIGH",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE"],
     estimatedLift: "GPU tier + venue simulator build + 3-6 months order book history.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -178,6 +189,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["cuOpt Route Problem Spec (8793)", "Gurobi or OR-Tools", "Beachhead Executor V2"],
     priority: "MEDIUM",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE", "SUPPORT"],
     estimatedLift: "OR-Tools integration (free) + multi-hop executor routing.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -192,6 +204,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["CEX Executor (8410)", "Beachhead Executor (8411)", "Ingestion Gate (8700)", "Arb Detector (8750)"],
     priority: "HIGH",
     status: "DEPLOYED",
+    deploymentClasses: ["RECON"],
     estimatedLift: "Execution telemetry pipeline + feedback loop to IG.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: "2026-03-26T00:00:00.000Z",
@@ -206,6 +219,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["CIA (8797)", "Whiteboard (8710)", "Execution logs from all executors"],
     priority: "HIGH",
     status: "DEPLOYED",
+    deploymentClasses: ["RECON", "INTEL"],
     estimatedLift: "CIA V2 with self-observation mode + executor log pipeline.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: "2026-03-26T00:00:00.000Z",
@@ -220,6 +234,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["Toolkit (8820)", "GTC (8600)", "Performance telemetry from all services"],
     priority: "MEDIUM",
     status: "BACKLOG",
+    deploymentClasses: ["SUPPORT"],
     estimatedLift: "Performance telemetry collection + Toolkit V2 profiling mode.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -234,6 +249,7 @@ const SEED_ENTRIES: Omit<BacklogEntry, "lastCheckedAt">[] = [
     prerequisites: ["cuOpt Route Problem Spec (8793)", "Market impact measurement", "Post-revenue trading volume"],
     priority: "MEDIUM",
     status: "BACKLOG",
+    deploymentClasses: ["STRIKE", "SUPPORT"],
     estimatedLift: "Post-revenue + sufficient trading volume to measure venue impact.",
     addedAt: "2026-03-26T00:00:00.000Z",
     deployedAt: null,
@@ -308,7 +324,7 @@ export class BacklogService {
   }
 
   /** Add a new backlog entry */
-  add(data: { title: string; origin: string; concept: string; blocker: string; prerequisites: string[]; priority: BacklogPriority; estimatedLift: string }): BacklogEntry {
+  add(data: { title: string; origin: string; concept: string; blocker: string; prerequisites: string[]; priority: BacklogPriority; estimatedLift: string; deploymentClasses?: DeploymentClass[] }): BacklogEntry {
     this.entryCounter++;
     const id = `WD-${String(this.entryCounter).padStart(3, "0")}`;
     const now = new Date().toISOString();
@@ -321,6 +337,7 @@ export class BacklogService {
       prerequisites: data.prerequisites,
       priority: data.priority,
       status: "BACKLOG",
+      deploymentClasses: data.deploymentClasses || ["STRIKE"],
       estimatedLift: data.estimatedLift,
       addedAt: now,
       lastCheckedAt: now,
